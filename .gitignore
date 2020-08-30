@@ -1,0 +1,9 @@
+target
+**/*.rs.bk
+Cargo\.lock
+data
+certs
+.vscode
+legato/**/Target_Legato_Debug
+legato/**/inc-gen
+legato/**/.settings

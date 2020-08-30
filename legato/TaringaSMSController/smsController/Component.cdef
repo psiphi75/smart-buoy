@@ -1,0 +1,14 @@
+requires:
+{
+	api:
+	{
+		le_sms = modemServices/le_sms.api
+	}
+}
+
+sources:
+{
+	main.c
+    smsMO.c
+    smsMT.c
+}

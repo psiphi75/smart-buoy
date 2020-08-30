@@ -1,0 +1,24 @@
+sandboxed: false
+
+executables:
+{
+	sms = ( smsController )
+}
+
+processes:
+{
+	run:
+	{
+		( sms )
+	}
+
+	maxCoreDumpFileBytes: 512K
+	maxFileBytes: 10000K
+}
+
+bindings:
+{
+	sms.smsController.le_sms -> modemService.le_sms
+}
+
+version: 1.0.0
