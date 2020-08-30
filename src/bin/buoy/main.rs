@@ -23,9 +23,9 @@ extern crate lazy_static;
 extern crate failure;
 #[macro_use]
 extern crate log;
+extern crate buoy_code;
 extern crate env_logger;
 extern crate futures;
-extern crate gift_code;
 extern crate quinn;
 extern crate rustls;
 extern crate time;
@@ -43,8 +43,8 @@ pub mod voltage;
 
 use url::Url;
 
-use gift_code::errors::GiftError;
-use gift_code::{CA_CERT_PATH, HOME_SERVER_URL, SW_VERSION};
+use buoy_code::errors::GiftError;
+use buoy_code::{CA_CERT_PATH, HOME_SERVER_URL, SW_VERSION};
 
 use crate::controller::controller;
 use crate::sensor_reader::sensor_reader;
@@ -69,9 +69,9 @@ fn main() {
   let action_tx2 = mpsc::Sender::clone(&action_tx1);
 
   // Get the hydrophone data
-  let serial_port = PathBuf::from(gift_code::SERIAL_PATH);
+  let serial_port = PathBuf::from(buoy_code::SERIAL_PATH);
   thread::spawn(move || {
-    sensor_reader(&action_tx1, &serial_port, gift_code::SERIAL_BAUD)
+    sensor_reader(&action_tx1, &serial_port, buoy_code::SERIAL_BAUD)
       .map_err(handle_error)
       .unwrap();
   });

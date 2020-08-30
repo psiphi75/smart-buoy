@@ -83,7 +83,7 @@ if [[ ${STAGE} == "release" ]]; then
 fi
 
 # compile
-cargo clean --package gift_code ${STAGE_FLAG}
+cargo clean --package buoy_code ${STAGE_FLAG}
 DOMAIN=${DOMAIN} CC=$LEGATO_CC cargo build --target=${ARCH_TARGET} --bin buoy ${STAGE_FLAG} --features "fx30"
 
 if [ $? -ne 0 ]; then

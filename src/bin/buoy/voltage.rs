@@ -1,3 +1,6 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
 ///****************************************************************************
 ///
 ///  Smart-Buoy - connects marine sounds to the cloud.
@@ -17,14 +20,12 @@
 ///  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 ///****************************************************************************
-#![allow(unused_imports)]
-#![allow(dead_code)]
 use regex::Regex;
 use std::fs::File;
 use std::io::prelude::*;
 
-use gift_code::errors::GiftError;
-use gift_code::GPIO_ADC_PATH;
+use buoy_code::errors::GiftError;
+use buoy_code::GPIO_ADC_PATH;
 
 // Calibration
 // These two values are calculated using least squares approximation of

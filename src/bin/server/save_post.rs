@@ -31,8 +31,8 @@ use std::time::Duration;
 use regex::Regex;
 use sonogram::{blackman_harris, SpecOptionsBuilder};
 
-use gift_code::date_now;
-use gift_code::errors::GiftError;
+use buoy_code::date_now;
+use buoy_code::errors::GiftError;
 
 const MAX_HTTP_HEADER_LEN: usize = 1024;
 const SERVER_SAVE_PATH: &str = "data";
@@ -108,9 +108,9 @@ fn write_raw_data_to_file(buf: &[u8], buoy_id: &str, date: &str) -> Result<(), G
   let mut meta_file = File::create(filename).map_err(GiftError::Io)?;
 
   // Find the body
-  let idx = find(buf, gift_code::HTTP_HEADER_END.as_bytes())?;
+  let idx = find(buf, buoy_code::HTTP_HEADER_END.as_bytes())?;
   meta_file
-    .write_all(&buf[(idx + gift_code::HTTP_HEADER_END.len())..])
+    .write_all(&buf[(idx + buoy_code::HTTP_HEADER_END.len())..])
     .map_err(GiftError::Io)
 }
 
@@ -183,7 +183,7 @@ pub fn save_http_post(buf: &[u8]) -> Result<(), GiftError> {
     write_raw_data_to_file(buf, buoy_id, &dt_str)?;
 
     let num_errors;
-    if buf.len() > gift_code::MIN_X3_FILE_SIZE * 2 {
+    if buf.len() > buoy_code::MIN_X3_FILE_SIZE * 2 {
       num_errors = write_wav_data_to_file(buoy_id, &dt_str)?;
 
       // Sleep a bit, because we need to read the wav file

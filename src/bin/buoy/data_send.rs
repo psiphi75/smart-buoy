@@ -29,10 +29,10 @@ use tokio::prelude::*;
 use tokio::runtime::current_thread::Runtime;
 use url::Url;
 
-use gift_code::errors::GiftError;
-use gift_code::BuoyData;
-use gift_code::ControllerAction;
-use gift_code::{END_BOUNDARY, SW_VERSION};
+use buoy_code::errors::GiftError;
+use buoy_code::BuoyData;
+use buoy_code::ControllerAction;
+use buoy_code::{END_BOUNDARY, SW_VERSION};
 
 pub struct Transmit<'a> {
   remote: std::net::SocketAddr,
@@ -55,7 +55,7 @@ impl<'a> Transmit<'a> {
       .ok_or(GiftError::RemoteUrlError)?;
 
     let mut config_builder = quinn::ClientConfigBuilder::default();
-    config_builder.protocols(gift_code::ALPN_QUIC_HTTP);
+    config_builder.protocols(buoy_code::ALPN_QUIC_HTTP);
 
     info!("Loading cert authority: {:?}", ca_path);
     config_builder
@@ -99,7 +99,7 @@ impl<'a> Transmit<'a> {
     runtime.block_on(
       endpoint
         .connect(&self.remote, &self.host)?
-        .timeout(gift_code::FX30_CONNECT_TIMEOUT)
+        .timeout(buoy_code::FX30_CONNECT_TIMEOUT)
         .map_err(|e| format_err!("failed to connect: {}", e))
         .and_then(move |new_conn| {
           tokio_current_thread::spawn(
@@ -114,7 +114,7 @@ impl<'a> Transmit<'a> {
             .and_then(move |(send, recv)| {
               // Send the request
               tokio::io::write_all(send, request.to_owned())
-                .timeout(gift_code::FX30_UPLOAD_SEND_TIMEOUT)
+                .timeout(buoy_code::FX30_UPLOAD_SEND_TIMEOUT)
                 .map_err(|e| format_err!("failed to send request: {}", e))
                 .and_then(|(send, _)| {
                   send
@@ -124,10 +124,10 @@ impl<'a> Transmit<'a> {
                 .and_then(move |_| {
                   recv
                     .read_to_end(usize::max_value())
-                    .timeout(gift_code::FX30_UPLOAD_RESP_TIMEOUT)
+                    .timeout(buoy_code::FX30_UPLOAD_RESP_TIMEOUT)
                     .map_err(|e| format_err!("failed to read response: {}", e))
                     .map(move |resp| {
-                      gift_code::commands::handle_server_response(action_tx, &resp).unwrap();
+                      buoy_code::commands::handle_server_response(action_tx, &resp).unwrap();
                     })
                 })
             })
@@ -176,7 +176,7 @@ fn build_http_post(buoy: &BuoyData) -> Result<Vec<u8>, GiftError> {
     buoy.uptime,
     SW_VERSION,
     buoy.hydrophone.len(),
-    gift_code::HTTP_HEADER_END
+    buoy_code::HTTP_HEADER_END
   )
   .into_bytes();
   let end = END_BOUNDARY.as_bytes();

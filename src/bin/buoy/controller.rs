@@ -37,14 +37,14 @@ use url::Url;
 use crate::data_send::Transmit;
 use crate::sensor_reader;
 use crate::voltage;
-use gift_code::commands::handle_fx30_command;
-use gift_code::errors::GiftError;
-use gift_code::ControllerAction::{self, *};
+use buoy_code::commands::handle_fx30_command;
+use buoy_code::errors::GiftError;
+use buoy_code::ControllerAction::{self, *};
 
 #[cfg(feature = "fx30")]
 fn read_gps(last_gps: Arc<Mutex<String>>) -> Result<(), GiftError> {
   // Start the actual connection
-  let mut gps_cmd = Command::new(gift_code::GPS_SCRIPT)
+  let mut gps_cmd = Command::new(buoy_code::GPS_SCRIPT)
     .stdout(Stdio::piped())
     .spawn()
     .map_err(GiftError::Io)?;
@@ -69,14 +69,14 @@ fn read_gps(last_gps: Arc<Mutex<String>>) -> Result<(), GiftError> {
 }
 
 ///
-/// Read the GPS every gift_code::GPS_ACQUISITION_PERIOD seconds.
+/// Read the GPS every buoy_code::GPS_ACQUISITION_PERIOD seconds.
 ///
 /// This spawns a thread.
 ///
 #[cfg(feature = "fx30")]
 fn read_gps_thread(last_gps: Arc<Mutex<String>>) {
   thread::spawn(move || loop {
-    thread::sleep(gift_code::GPS_ACQUISITION_PERIOD);
+    thread::sleep(buoy_code::GPS_ACQUISITION_PERIOD);
     read_gps(Arc::clone(&last_gps)).unwrap();
   });
 }
@@ -99,30 +99,30 @@ fn is_nz_daylight() -> bool {
 #[cfg(feature = "fx30")]
 fn blink_buoy_light() {
   thread::spawn(move || loop {
-    thread::sleep(gift_code::BUOY_NAV_LIGHT_LONG_INT);
+    thread::sleep(buoy_code::BUOY_NAV_LIGHT_LONG_INT);
     let is_daylight = is_nz_daylight();
-    for _ in 0..gift_code::BUOY_NAV_LIGHT_NUM_SHORT {
+    for _ in 0..buoy_code::BUOY_NAV_LIGHT_NUM_SHORT {
       // Turn ON - but only outside of bright daylight hours (7pm.. 5am UTC)
       if !is_daylight {
-        match fs::write(gift_code::BUOY_NAV_LIGHT_GPIO, b"1") {
+        match fs::write(buoy_code::BUOY_NAV_LIGHT_GPIO, b"1") {
           Err(_) => (),
           Ok(()) => (),
         }
       }
-      thread::sleep(gift_code::BUOY_NAV_LIGHT_BLINK_ON);
+      thread::sleep(buoy_code::BUOY_NAV_LIGHT_BLINK_ON);
 
       // OFF
-      match fs::write(gift_code::BUOY_NAV_LIGHT_GPIO, b"0") {
+      match fs::write(buoy_code::BUOY_NAV_LIGHT_GPIO, b"0") {
         Err(_) => (),
         Ok(()) => (),
       }
-      thread::sleep(gift_code::BUOY_NAV_LIGHT_BLINK_OFF);
+      thread::sleep(buoy_code::BUOY_NAV_LIGHT_BLINK_OFF);
     }
   });
 }
 
 fn run_ulpm(sleeptime: usize) {
-  let output = Command::new(gift_code::ULPM_SCRIPT)
+  let output = Command::new(buoy_code::ULPM_SCRIPT)
     .arg(sleeptime.to_string())
     .output()
     .expect("failed to execute process");
@@ -142,15 +142,15 @@ fn run_ulpm(sleeptime: usize) {
 ///
 fn power_management() {
   thread::spawn(move || loop {
-    thread::sleep(gift_code::FX30_PM_TIME_AWAKE);
+    thread::sleep(buoy_code::FX30_PM_TIME_AWAKE);
 
     let battery_voltage = voltage::get_voltage().unwrap();
-    if battery_voltage < gift_code::FX30_PM_POWER_LOW_THRESH {
+    if battery_voltage < buoy_code::FX30_PM_POWER_LOW_THRESH {
       thread::sleep(Duration::from_secs(60));
-      run_ulpm(gift_code::FX30_PM_POWER_LOW_SLEEP_TIME_SEC);
-    } else if battery_voltage < gift_code::FX30_PM_POWER_MEDIUM_THRESH {
+      run_ulpm(buoy_code::FX30_PM_POWER_LOW_SLEEP_TIME_SEC);
+    } else if battery_voltage < buoy_code::FX30_PM_POWER_MEDIUM_THRESH {
       thread::sleep(Duration::from_secs(60));
-      run_ulpm(gift_code::FX30_PM_POWER_MEDIUM_SLEEP_TIME_SEC);
+      run_ulpm(buoy_code::FX30_PM_POWER_MEDIUM_SLEEP_TIME_SEC);
     }
   });
 }
@@ -160,7 +160,7 @@ fn transmit_data(
   ca_path: PathBuf,
   action_tx: Sender<ControllerAction>,
   last_gps: &std::sync::Arc<std::sync::Mutex<std::string::String>>,
-  mut data: gift_code::BuoyData,
+  mut data: buoy_code::BuoyData,
 ) {
   // Collect the data from the hydrophone buffer
 
@@ -223,14 +223,14 @@ pub fn controller(
     // Wait
     //
 
-    thread::sleep(gift_code::FX30_SEND_INTERVAL);
+    thread::sleep(buoy_code::FX30_SEND_INTERVAL);
 
     //
     // Gather all necessary data
     //
 
     loop {
-      let action = action_rx.recv_timeout(gift_code::FX30_NO_DATA_WAIT);
+      let action = action_rx.recv_timeout(buoy_code::FX30_NO_DATA_WAIT);
 
       // Handle the action
       match action {

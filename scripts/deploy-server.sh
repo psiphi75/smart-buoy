@@ -46,7 +46,7 @@ STAGE_ARG=""
 if [ "release" == "${STAGE}" ]; then
   STAGE_ARG="--release"
 fi
-cargo clean --package gift_code ${STAGE_FLAG}
+cargo clean --package buoy_code ${STAGE_FLAG}
 DOMAIN=${DOMAIN} cargo build --bin server ${STAGE_ARG}
 
 #

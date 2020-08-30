@@ -23,8 +23,8 @@ extern crate quinn;
 extern crate tokio;
 #[macro_use]
 extern crate failure;
+extern crate buoy_code;
 extern crate futures;
-extern crate gift_code;
 extern crate rustls;
 extern crate tokio_current_thread;
 
@@ -85,9 +85,9 @@ struct Opt {
 fn main() {
   println!("Running");
   let opt = Opt {
-    key_path: PathBuf::from(gift_code::CA_SERVER_RSA_PATH),
-    cert_path: PathBuf::from(gift_code::CA_SERVER_CHAIN_PATH),
-    listen: SocketAddr::from(([0, 0, 0, 0], gift_code::QUIC_PORT)),
+    key_path: PathBuf::from(buoy_code::CA_SERVER_RSA_PATH),
+    cert_path: PathBuf::from(buoy_code::CA_SERVER_CHAIN_PATH),
+    listen: SocketAddr::from(([0, 0, 0, 0], buoy_code::QUIC_PORT)),
   };
   let code = {
     if let Err(e) = run(opt) {
@@ -102,7 +102,7 @@ fn main() {
 
 fn run(options: Opt) -> Result<()> {
   let mut server_config = quinn::ServerConfigBuilder::default();
-  server_config.protocols(gift_code::ALPN_QUIC_HTTP);
+  server_config.protocols(buoy_code::ALPN_QUIC_HTTP);
   server_config.use_stateless_retry(true);
 
   let key = fs::read(&options.key_path).context("failed to read private key")?;
@@ -264,13 +264,13 @@ fn process_post(buf: Vec<u8>) -> Result<Box<[u8]>> {
   if buf.len() < 5 || &buf[0..5] != b"POST " {
     bail!("missing POST");
   }
-  if !buf.ends_with(gift_code::END_BOUNDARY.as_bytes()) {
+  if !buf.ends_with(buoy_code::END_BOUNDARY.as_bytes()) {
     bail!("missing END_BOUNDARY");
   }
 
   // All good.  Let's move the heavy processing to a thread
   thread::spawn(move || {
-    let payload_len = buf.len() - gift_code::END_BOUNDARY.len();
+    let payload_len = buf.len() - buoy_code::END_BOUNDARY.len();
     let payload = &buf[0..payload_len];
     save_http_post(payload).unwrap();
   });

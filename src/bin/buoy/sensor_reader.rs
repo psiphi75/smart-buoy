@@ -29,10 +29,10 @@ use serialport::prelude::*;
 
 use crate::voltage::get_voltage;
 
-use gift_code::date_now;
-use gift_code::errors::GiftError;
-use gift_code::BuoyData;
-use gift_code::ControllerAction;
+use buoy_code::date_now;
+use buoy_code::errors::GiftError;
+use buoy_code::BuoyData;
+use buoy_code::ControllerAction;
 
 fn find_first(search_buf: &[u8], target_buf: &[u8]) -> Option<usize> {
   if target_buf.len() > search_buf.len() {
@@ -131,7 +131,7 @@ pub fn create_buoy_data(
   start_time: Option<String>,
 ) -> Result<BuoyData, GiftError> {
   Ok(BuoyData {
-    id: gift_code::BUOY_ID,
+    id: buoy_code::BUOY_ID,
     hydrophone: if hydrophone.is_none() {
       vec![]
     } else {
@@ -153,7 +153,7 @@ fn read_loop(
   mut port: Box<dyn SerialPort>,
   data_tx: &Sender<ControllerAction>,
 ) -> Result<(), GiftError> {
-  let mut serial_buf: Vec<u8> = vec![0; gift_code::SERIAL_BUF_SIZE];
+  let mut serial_buf: Vec<u8> = vec![0; buoy_code::SERIAL_BUF_SIZE];
   let mut send_buf = Vec::new();
   let mut rec_time = time::Instant::now(); // How long we've been recoding for
   let mut start_time = date_now();
@@ -175,7 +175,7 @@ fn read_loop(
     }
 
     // Send data when required
-    if rec_time.elapsed().as_secs() > gift_code::FX30_RECORD_LEN && !send_buf.is_empty() {
+    if rec_time.elapsed().as_secs() > buoy_code::FX30_RECORD_LEN && !send_buf.is_empty() {
       let (buf, remainder_buf) = clean_x3_data(&send_buf, &header_start);
       send_buf = remainder_buf;
       info!(
